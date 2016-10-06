@@ -1,4 +1,4 @@
-<script>#!groovy
+#!groovy
 
 def CMake = fileLoader.fromGit('vars/CMake', 'https://github.com/davidjsherman/aseba-jenkins.git', 'dumpenv', null, '')
 
@@ -77,5 +77,3 @@ parallel enki_builders
 
 stage 'Aseba Build'
 parallel aseba_builders
-</script>
-
