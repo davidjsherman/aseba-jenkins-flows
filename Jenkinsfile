@@ -1,4 +1,4 @@
-<script>#!groovy
+#!groovy
 
 stage('Dashel') {
 	node('inirobot-win7') {
@@ -59,5 +59,4 @@ stage('Aseba') {
 		}
 		stash includes: '_install/**', name: 'aseba'
 	}
-}</script>
-
+}
