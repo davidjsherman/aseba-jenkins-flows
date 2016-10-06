@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.7">
+  <actions/>
+  <description>Complete build of upstream Aseba, Dashel, Enki</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.18">
+    <script>#!groovy
+
+def CMake = fileLoader.fromGit(&apos;vars/CMake&apos;, &apos;https://github.com/davidjsherman/aseba-jenkins.git&apos;, &apos;dumpenv&apos;, null, &apos;&apos;)
+
+stage &apos;Setup&apos;
+node(&apos;inirobot-deb64&apos;) {
+  sh &apos;mkdir -p dashel enki aseba&apos;
+
+  dir(&apos;dashel&apos;) {
+    git branch: &apos;pollsocketstream&apos;, url: &apos;https://github.com/davidjsherman/dashel.git&apos;
+  }
+  dir(&apos;enki&apos;) {
+    git branch: &apos;old-api&apos;, url: &apos;https://github.com/davidjsherman/enki.git&apos;
+  }
+  dir(&apos;aseba&apos;) {
+    git branch: &apos;zeroconf-PR-derived&apos;, url: &apos;https://github.com/davidjsherman/aseba.git&apos;
+    sh &apos;git submodule update --init --recursive&apos;
+  }
+  
+  stash excludes: &apos;.git&apos;, name: &apos;source&apos;
+}
+
+def labels = [&apos;inirobot-deb64&apos;, &apos;inirobot-osx&apos;]
+def dashel_builders = [:]	// map to fire all builds in parallel
+def enki_builders = [:]		// map to fire all builds in parallel
+def aseba_builders = [:]	// map to fire all builds in parallel
+
+for (x in labels) {
+  def label = x			// Need to bind the label variable before the closure
+
+  dashel_builders[label] = {
+    node(label) {
+      unstash &apos;source&apos;
+      CMake.call([buildType: &apos;Debug&apos;,
+		  sourceDir: &apos;$workDir/dashel&apos;,
+		  buildDir: &apos;$workDir/_build/dashel/&apos; + label,
+		  installDir: &apos;$workDir/_install&apos;,
+		  getCmakeArgs: [
+		      &apos;-DBUILD_SHARED_LIBS:BOOL=ON&apos;
+		      ]
+		 ])
+      stash includes: &apos;_install/**&apos;, name: &apos;dashel-&apos;+label
+    }
+  }
+  enki_builders[label] = {
+    node(label) {
+      unstash &apos;source&apos;
+      CMake.call([buildType: &apos;Debug&apos;,
+		  sourceDir: &apos;$workDir/enki&apos;,
+		  buildDir: &apos;$workDir/_build/enki/&apos; + label,
+		  installDir: &apos;$workDir/_install&apos;,
+		  getCmakeArgs: [ &apos;-DBUILD_SHARED_LIBS:BOOL=ON&apos; ]
+		 ])
+      stash includes: &apos;_install/**&apos;, name: &apos;enki-&apos;+label
+    }
+  }
+  aseba_builders[label] = {
+    node(label) {
+      unstash &apos;source&apos;
+      env.dashel_DIR = sh ( script: &apos;dirname $(find _install -name dashelConfig.cmake | head -1)&apos;, returnStdout: true).trim()
+      CMake.call([buildType: &apos;Debug&apos;,
+		  sourceDir: &apos;$workDir/aseba&apos;,
+		  buildDir: &apos;$workDir/_build/aseba/&apos; + label,
+		  installDir: &apos;$workDir/_install&apos;,
+		  envs: [ &quot;dashel_DIR=${env.dashel_DIR}&quot; ]
+		 ])
+      stash includes: &apos;_install/**&apos;, name: &apos;aseba-&apos;+label
+    }
+  }
+}
+
+stage &apos;Dashel Build&apos;
+parallel dashel_builders
+
+stage &apos;Enki Build&apos;
+parallel enki_builders
+
+stage &apos;Aseba Build&apos;
+parallel aseba_builders
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

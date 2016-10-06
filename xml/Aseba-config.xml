@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.6">
+  <actions/>
+  <description>Build complete Aseba distribution, including Dashel and Enki.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.17">
+    <script>#!groovy
+
+stage(&apos;Dashel&apos;) {
+	node(&apos;inirobot-win7&apos;) {
+		git branch: &apos;pollsocketstream&apos;, credentialsId: &apos;55b7beaa-040d-40cb-ba15-a03d1df32fca&apos;, url: &apos;https://github.com/davidjsherman/dashel.git&apos;
+		sh &apos;&apos;&apos;git submodule update --init&apos;&apos;&apos;
+		withEnv([&quot;WORKSPACE=${pwd()}&quot;,&quot;INSTALL=${pwd()}/_install&quot;,&quot;BUILD=${pwd()}/_build&quot;]) {
+			sh &apos;&apos;&apos;echo WORKSPACE=${WORKSPACE}
+				rm -rf ${INSTALL}/dashel &amp;&amp; mkdir -p ${INSTALL}/dashel
+				rm -rf ${BUILD} &amp;&amp; mkdir ${BUILD}
+				cd ${BUILD}
+				cmake ${WORKSPACE} -G &apos;Unix Makefiles&apos; -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL}/dashel \
+					-DBUILD_SHARED_LIBS:BOOL=OFF
+				make
+				make install
+			&apos;&apos;&apos;
+		}
+		stash includes: &apos;_install/dashel/**&apos;, name: &apos;dashel&apos;
+	}
+}
+stage(&apos;Enki&apos;) {
+	node(&apos;inirobot-win7&apos;) {
+		git branch: &apos;old-api&apos;, credentialsId: &apos;55b7beaa-040d-40cb-ba15-a03d1df32fca&apos;, url: &apos;https://github.com/davidjsherman/enki.git&apos;
+		sh &apos;&apos;&apos;git submodule update --init&apos;&apos;&apos;
+		withEnv([&quot;WORKSPACE=${pwd()}&quot;,&quot;INSTALL=${pwd()}/_install&quot;,&quot;BUILD=${pwd()}/_build&quot;]) {
+			sh &apos;&apos;&apos;echo WORKSPACE=${WORKSPACE}
+				rm -rf ${INSTALL}/enki &amp;&amp; mkdir -p ${INSTALL}/enki
+				rm -rf ${BUILD} &amp;&amp; mkdir ${BUILD}
+				cd ${BUILD}
+				cmake ${WORKSPACE} -G &apos;Unix Makefiles&apos; -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL}/enki
+				make
+				make install
+			&apos;&apos;&apos;
+		}
+		stash includes: &apos;_install/enki/**&apos;, name: &apos;enki&apos;
+	}
+}
+stage(&apos;Aseba&apos;) {
+	node(&apos;inirobot-win7&apos;) {
+		git branch: &apos;zeroconf-PR-derived&apos;, credentialsId: &apos;55b7beaa-040d-40cb-ba15-a03d1df32fca&apos;, url: &apos;https://github.com/davidjsherman/aseba.git&apos;
+		sh &apos;&apos;&apos;git submodule update --init&apos;&apos;&apos;
+		unstash &apos;dashel&apos;
+		unstash &apos;enki&apos;
+		withEnv([&quot;WORKSPACE=${pwd()}&quot;,&quot;INSTALL=${pwd()}/_install&quot;,&quot;BUILD=${pwd()}/_build&quot;]) {
+			sh &apos;&apos;&apos;echo WORKSPACE=${WORKSPACE}
+				rm -rf ${INSTALL}/aseba &amp;&amp; mkdir -p ${INSTALL}/aseba
+				rm -rf ${BUILD} &amp;&amp; mkdir ${BUILD}
+				cd ${BUILD}
+				cmake ${WORKSPACE} -G &apos;Unix Makefiles&apos; -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL}/aseba \
+					-Ddashel_DIR=${INSTALL}/dashel \
+					-DDASHEL_LIBRARY:FILEPATH=${INSTALL}/dashel/lib/libdashel.a \
+					-DDASHEL_INCLUDE_DIR:PATH=${INSTALL}/dashel/include \
+					-DENKI_INCLUDE_DIR:PATH=${INSTALL}/enki/include \
+					-DENKI_LIBRARY:FILEPATH=${INSTALL}/enki/lib/libenki.a \
+					-DENKI_VIEWER_LIBRARY:FILEPATH=${INSTALL}/enki/lib/libenkiviewer.a
+				make
+				make install
+			&apos;&apos;&apos;
+		}
+		stash includes: &apos;_install/**&apos;, name: &apos;aseba&apos;
+	}
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

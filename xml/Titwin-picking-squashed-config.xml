@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.7">
+  <actions/>
+  <description>Compile Enki on all platforms</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.18">
+    <script>#!groovy
+
+def CMake = fileLoader.fromGit(&apos;vars/CMake&apos;, &apos;https://github.com/davidjsherman/aseba-jenkins.git&apos;, &apos;master&apos;, null, &apos;&apos;)
+
+stage &apos;Setup&apos;
+node() {
+  git branch: &apos;Titwin-picking-squashed&apos;, url: &apos;https://github.com/enki-community/enki.git&apos;
+  stash excludes: &apos;.git&apos;, name: &apos;source&apos;
+}
+
+def labels = [&apos;inirobot-deb64&apos;, &apos;inirobot-u64&apos;, &apos;inirobot-win7&apos;, &apos;inirobot-osx&apos;]
+def builders = [:]		// map to fire all builds in parallel
+for (x in labels) {
+  def label = x			// Need to bind the label variable before the closure
+  def output = &quot;enki-&quot; + x
+  
+  builders[label] = {
+    node(label) {
+      unstash &apos;source&apos;
+      CMake.call([buildType: &apos;Debug&apos;,
+		  buildDir: &apos;$workDir/_build&apos;,
+		  installDir: &apos;$workDir/_install/&apos; + output,
+		  getCmakeArgs: &apos;-DBUILD_SHARED_LIBS:BOOL=OFF&apos;
+		 ])
+      stash includes: &apos;_install/&apos;+output+&apos;/**&apos;, name: output
+      sh &quot;mkdir -p _install/${output}/bin &amp;&amp; install _build/examples/enkiTest _build/viewer/enkiplayground _install/${output}/bin&quot;
+      archiveArtifacts artifacts: &apos;_install/&apos;+output+&apos;/**&apos;, fingerprint: true, onlyIfSuccessful: true
+    }
+  }
+}
+
+stage &apos;Build&apos;
+parallel builders
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>
