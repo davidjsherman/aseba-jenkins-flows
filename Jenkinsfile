@@ -3,7 +3,7 @@ pipeline {
         FOO = "BAR"
     }
 
-    agent label:"master"
+    agent label:''
 
     stages {
         stage("foo") {
