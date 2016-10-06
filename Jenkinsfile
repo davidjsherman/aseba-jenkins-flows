@@ -1,4 +1,4 @@
-<script>#!groovy
+#!groovy
 
 def CMake = fileLoader.fromGit('vars/CMake', 'https://github.com/davidjsherman/aseba-jenkins.git', 'master', null, '')
 
@@ -31,5 +31,3 @@ for (x in labels) {
 
 stage 'Build'
 parallel builders
-</script>
-
