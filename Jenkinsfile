@@ -1,5 +1,3 @@
-#groovy
-
 pipeline {
     environment {
         FOO = "BAR"
