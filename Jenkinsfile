@@ -19,6 +19,10 @@ pipeline {
 	      git branch: 'master', url: 'https://github.com/aseba-community/aseba.git'
 	      sh 'git submodule update --init --recursive'
 	    }
+
+	    sh 'for d in dashel enki aseba; do (cd $d && git remove -v | sed s/^/$d:/) done'
+
+	    stash excludes: '.git', name: 'source'
         }
     }
 }
