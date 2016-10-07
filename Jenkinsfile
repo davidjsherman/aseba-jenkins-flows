@@ -23,19 +23,19 @@ pipeline {
       sh 'for d in dashel enki aseba; do (cd $d && git remote -v | sed s/^/$d:/) done'
       
       stash excludes: '.git', name: 'source'
-
-      script {
-	def build(component) {
-	  def builders = [:]
-	  for (x in ['inirobot-u64', 'inirobot-osx', 'inirobot-win7']) {
-	    label = x
-	    builders[label] = {
-	      node(label) {
+    }
+    
+    stage("Dashel") {
+      parallel (
+	script {
+	  ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'].collect {
+	    ${it}: {
+	      node(${it}) {
 		unstash 'source'
 		CMake([buildType: 'Debug',
-		       sourceDir: '$workDir/'+component,
-		       buildDir: '$workDir/_build/'+component+'/'+label,
-		       installDir: '$workDir/_install/'+label,
+		       sourceDir: '$workDir/'+'dashel',
+		       buildDir: '$workDir/_build/'+'dashel'+'/'+${it},
+		       installDir: '$workDir/_install/'+${it},
 		       getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
 		      ])
 		script {
@@ -44,13 +44,8 @@ pipeline {
 	      }
 	    }
 	  }
-	  return builders
 	}
-      }
-    }
-    
-    stage("Dashel") {
-      parallel (build('dashel'))
+      )
     }
       // parallel (
       // 	"ubuntu": {
