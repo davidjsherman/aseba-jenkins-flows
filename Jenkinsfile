@@ -27,7 +27,7 @@ pipeline {
     
     stage("Dashel") {
       parallel (
-	script {
+	//script {
 	  ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'].collectEntries {
 	    [(it): {
 	      node(it) {
@@ -44,7 +44,7 @@ pipeline {
 	      }
 	    }]
 	  }
-	}
+	  //}
       )
     }
       // parallel (
