@@ -42,7 +42,7 @@ pipeline {
 		  env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
 		}
 	      }
-	    }]
+	    }
 	  }
 	  //}
       )
