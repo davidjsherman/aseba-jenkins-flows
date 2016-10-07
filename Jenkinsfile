@@ -33,7 +33,12 @@ pipeline {
 	     installDir: '$workDir/_install',
 	     getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
 	    ])
+    }
+
+    environment {
       env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+    }
+    stage("Check") {
       sh 'echo dashel_DIR is ${dashel_DIR}'
     }
   }
