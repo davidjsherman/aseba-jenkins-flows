@@ -29,13 +29,13 @@ pipeline {
       parallel (
 	script {
 	  ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'].collect {
-	    ${it}: {
-	      node(${it}) {
+	    "${it}": {
+	      node(it) {
 		unstash 'source'
 		CMake([buildType: 'Debug',
 		       sourceDir: '$workDir/'+'dashel',
-		       buildDir: '$workDir/_build/'+'dashel'+'/'+${it},
-		       installDir: '$workDir/_install/'+${it},
+		       buildDir: '$workDir/_build/'+'dashel'+'/'+it,
+		       installDir: '$workDir/_install/'+it,
 		       getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
 		      ])
 		script {
