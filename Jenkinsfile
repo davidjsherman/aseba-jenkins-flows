@@ -28,8 +28,8 @@ pipeline {
     stage("Dashel") {
       parallel (
 	script {
-	  ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'].collect {
-	    "${it}": {
+	  ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'].collectEntries {
+	    [(it): {
 	      node(it) {
 		unstash 'source'
 		CMake([buildType: 'Debug',
@@ -42,7 +42,7 @@ pipeline {
 		  env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
 		}
 	      }
-	    }
+	    }]
 	  }
 	}
       )
