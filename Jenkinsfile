@@ -26,42 +26,16 @@ pipeline {
     }
     
     stage("Dashel") {
-      parallel (
-	"ubuntu": {
-	  node('inirobot-u64') {
+      def builders = [:]
+      for (x in ['inirobot-u64', 'inirobot-osx', 'inirobot-win7']) {
+	label = x
+	builders[label] = {
+	  node(label) {
 	    unstash 'source'
 	    CMake([buildType: 'Debug',
 		   sourceDir: '$workDir/dashel',
-		   buildDir: '$workDir/_build/dashel/',
-		   installDir: '$workDir/_install',
-		   getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
-		  ])
-	    script {
-	      env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
-	    }
-	  }
-	},
-	"macOS": {
-	  node('inirobot-osx') {
-	    unstash 'source'
-	    CMake([buildType: 'Debug',
-		   sourceDir: '$workDir/dashel',
-		   buildDir: '$workDir/_build/dashel/',
-		   installDir: '$workDir/_install',
-		   getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
-		  ])
-	    script {
-	      env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
-	    }
-	  }
-	},
-	"windows": {
-	  node('inirobot-win7') {
-	    unstash 'source'
-	    CMake([buildType: 'Debug',
-		   sourceDir: '$workDir/dashel',
-		   buildDir: '$workDir/_build/dashel/',
-		   installDir: '$workDir/_install',
+		   buildDir: '$workDir/_build/dashel/'+label,
+		   installDir: '$workDir/_install/'+label,
 		   getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
 		  ])
 	    script {
@@ -69,8 +43,54 @@ pipeline {
 	    }
 	  }
 	}
-      )
+      }
+      parallel(builders)
     }
+      // parallel (
+      // 	"ubuntu": {
+      // 	  node('inirobot-u64') {
+      // 	    unstash 'source'
+      // 	    CMake([buildType: 'Debug',
+      // 		   sourceDir: '$workDir/dashel',
+      // 		   buildDir: '$workDir/_build/dashel/',
+      // 		   installDir: '$workDir/_install',
+      // 		   getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
+      // 		  ])
+      // 	    script {
+      // 	      env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+      // 	    }
+      // 	  }
+      // 	},
+      // 	"macOS": {
+      // 	  node('inirobot-osx') {
+      // 	    unstash 'source'
+      // 	    CMake([buildType: 'Debug',
+      // 		   sourceDir: '$workDir/dashel',
+      // 		   buildDir: '$workDir/_build/dashel/',
+      // 		   installDir: '$workDir/_install',
+      // 		   getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
+      // 		  ])
+      // 	    script {
+      // 	      env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+      // 	    }
+      // 	  }
+      // 	},
+      // 	"windows": {
+      // 	  node('inirobot-win7') {
+      // 	    unstash 'source'
+      // 	    CMake([buildType: 'Debug',
+      // 		   sourceDir: '$workDir/dashel',
+      // 		   buildDir: '$workDir/_build/dashel/',
+      // 		   installDir: '$workDir/_install',
+      // 		   getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
+      // 		  ])
+      // 	    script {
+      // 	      env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+      // 	    }
+      // 	  }
+      // 	}
+      // )
+    // }
 
     stage("Check") {
       sh 'echo Check dashel_DIR is ${dashel_DIR}'
