@@ -20,7 +20,7 @@ pipeline {
 	      sh 'git submodule update --init --recursive'
 	    }
 
-	    sh 'for d in dashel enki aseba; do (cd $d && git remove -v | sed s/^/$d:/) done'
+	    sh 'for d in dashel enki aseba; do (cd $d && git remote -v | sed s/^/$d:/) done'
 
 	    stash excludes: '.git', name: 'source'
         }
