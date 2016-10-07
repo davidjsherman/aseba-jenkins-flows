@@ -23,35 +23,11 @@ pipeline {
       sh 'for d in dashel enki aseba; do (cd $d && git remote -v | sed s/^/$d:/) done'
       
       stash excludes: '.git', name: 'source'
-
-      script {
-	@NonCPS
-	def labelsToNodes(labels) {
-	  def nodeMap = [:]
-	  for (label in labels) {
-	    nodeMap[label] = {
-	      node(label) {
-		unstash 'source'
-		CMake([buildType: 'Debug',
-		       sourceDir: '$workDir/'+'dashel',
-		       buildDir: '$workDir/_build/'+'dashel'+'/'+label,
-		       installDir: '$workDir/_install/'+label,
-		       getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
-		      ])
-		script {
-		  env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
-		}
-	      }
-	    }
-	  }
-	  nodeMap
-	}
-      }
     }
     
     stage("Dashel") {
       parallel (
-	labelsToNodes( ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] )
+	labelsToNodes( 'dashel', ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] )
       )
     }
       // parallel (
