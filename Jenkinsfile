@@ -26,7 +26,7 @@ pipeline {
     }
     
     stage("Dashel") {
-      script {
+      parallel {
 	def builders = [:]
 	for (x in ['inirobot-u64', 'inirobot-osx', 'inirobot-win7']) {
 	  label = x
@@ -45,8 +45,8 @@ pipeline {
 	    }
 	  }
 	}
+	builders
       }
-      parallel(builders)
     }
       // parallel (
       // 	"ubuntu": {
