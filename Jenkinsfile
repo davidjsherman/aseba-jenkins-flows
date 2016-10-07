@@ -26,9 +26,9 @@ pipeline {
     }
     
     stage("Dashel") {
-      script {
-	println (
-	  ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'].collectEntries {
+      println (
+	script {
+	  ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'].collectEntries { it ->
 	    [(it): {
 	      node(it) {
 		unstash 'source'
@@ -44,8 +44,8 @@ pipeline {
 	      }
 	    }]
 	  }
-	)
-      }
+	}
+      )
     }
       // parallel (
       // 	"ubuntu": {
