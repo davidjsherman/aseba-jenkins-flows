@@ -3,8 +3,6 @@ pipeline {
     FOO = "BAR"
   }
 
-  def CMake = fileLoader.fromGit('vars/CMake', 'https://github.com/davidjsherman/aseba-jenkins.git', 'master', null, '')
-
   agent label:'inirobot-deb64'
   
   stages {
