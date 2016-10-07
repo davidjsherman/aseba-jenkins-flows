@@ -27,7 +27,7 @@ pipeline {
     
     stage("Dashel") {
       println (
-	labelsToNodes.labelsToNodes( 'dashel', ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] )
+	labelsToNodes( 'dashel', ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] )
       )
     }
       // parallel (
