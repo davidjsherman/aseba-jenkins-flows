@@ -29,7 +29,7 @@ pipeline {
       parallel (
 	//script {
 	  ['inirobot-u64', 'inirobot-osx', 'inirobot-win7'].collectEntries {
-	    [(it): {
+	    it -> {
 	      node(it) {
 		unstash 'source'
 		CMake([buildType: 'Debug',
