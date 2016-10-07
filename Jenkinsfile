@@ -36,6 +36,11 @@ pipeline {
       script {
 	env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
       }
+      sh 'echo dashel_DIR is ${dashel_DIR}'
+    }
+
+    stage("Check") {
+      sh 'echo Check dashel_DIR is ${dashel_DIR}'
     }
 
     // stage("Enki") {
@@ -52,9 +57,6 @@ pipeline {
     //   unstash 'source'
     // environment {
     //   env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
-    // }
-    // stage("Check") {
-    //   sh 'echo dashel_DIR is ${dashel_DIR}'
     // }
   }
 }
