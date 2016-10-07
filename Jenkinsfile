@@ -33,13 +33,28 @@ pipeline {
 	     installDir: '$workDir/_install',
 	     getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
 	    ])
+      script {
+	env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+      }
     }
 
-    environment {
-      env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
-    }
-    stage("Check") {
-      sh 'echo dashel_DIR is ${dashel_DIR}'
-    }
+    // stage("Enki") {
+    //   unstash 'source'
+    //   CMake([buildType: 'Debug',
+    // 	     sourceDir: '$workDir/enki',
+    // 	     buildDir: '$workDir/_build/enki/',
+    // 	     installDir: '$workDir/_install',
+    // 	     getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
+    // 	    ])
+    // }
+
+    // stage("Aseba") {
+    //   unstash 'source'
+    // environment {
+    //   env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+    // }
+    // stage("Check") {
+    //   sh 'echo dashel_DIR is ${dashel_DIR}'
+    // }
   }
 }
