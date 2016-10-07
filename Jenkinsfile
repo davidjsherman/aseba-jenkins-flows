@@ -26,20 +26,22 @@ pipeline {
     }
     
     stage("Dashel") {
-      def builders = [:]
-      for (x in ['inirobot-u64', 'inirobot-osx', 'inirobot-win7']) {
-	label = x
-	builders[label] = {
-	  node(label) {
-	    unstash 'source'
-	    CMake([buildType: 'Debug',
-		   sourceDir: '$workDir/dashel',
-		   buildDir: '$workDir/_build/dashel/'+label,
-		   installDir: '$workDir/_install/'+label,
-		   getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
-		  ])
-	    script {
-	      env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+      script {
+	def builders = [:]
+	for (x in ['inirobot-u64', 'inirobot-osx', 'inirobot-win7']) {
+	  label = x
+	  builders[label] = {
+	    node(label) {
+	      unstash 'source'
+	      CMake([buildType: 'Debug',
+		     sourceDir: '$workDir/dashel',
+		     buildDir: '$workDir/_build/dashel/'+label,
+		     installDir: '$workDir/_install/'+label,
+		     getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
+		    ])
+	      script {
+		env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+	      }
 	    }
 	  }
 	}
