@@ -25,26 +25,28 @@ pipeline {
       stash excludes: '.git', name: 'source'
     }
 
-    @NonCPS
-    def labelsToNodes(labels) {
-      def nodeMap = [:]
-      for (label in labels) {
-	nodeMap[label] = {
-	  node(label) {
-	    unstash 'source'
-	    CMake([buildType: 'Debug',
-		   sourceDir: '$workDir/'+'dashel',
-		   buildDir: '$workDir/_build/'+'dashel'+'/'+label,
-		   installDir: '$workDir/_install/'+label,
-		   getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
-		  ])
-	    script {
-	      env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+    script {
+      @NonCPS
+      def labelsToNodes(labels) {
+	def nodeMap = [:]
+	for (label in labels) {
+	  nodeMap[label] = {
+	    node(label) {
+	      unstash 'source'
+	      CMake([buildType: 'Debug',
+		     sourceDir: '$workDir/'+'dashel',
+		     buildDir: '$workDir/_build/'+'dashel'+'/'+label,
+		     installDir: '$workDir/_install/'+label,
+		     getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
+		    ])
+	      script {
+		env.dashel_DIR = sh ( script: 'dirname $(find _install -name dashelConfig.cmake | head -1)', returnStdout: true).trim()
+	      }
 	    }
 	  }
 	}
+	nodeMap
       }
-      nodeMap
     }
     
     stage("Dashel") {
