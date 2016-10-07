@@ -27,12 +27,12 @@ pipeline {
     
     stage("Dashel") {
       unstash 'source'
-      CMake.call([buildType: 'Debug',
-		  sourceDir: '$workDir/dashel',
-		  buildDir: '$workDir/_build/dashel/',
-		  installDir: '$workDir/_install',
-		  getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
-		 ])
+      CMake([buildType: 'Debug',
+	     sourceDir: '$workDir/dashel',
+	     buildDir: '$workDir/_build/dashel/',
+	     installDir: '$workDir/_install',
+	     getCmakeArgs: [ '-DBUILD_SHARED_LIBS:BOOL=ON' ]
+	    ])
     }
   }
 }
