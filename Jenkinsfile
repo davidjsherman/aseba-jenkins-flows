@@ -23,9 +23,7 @@ pipeline {
       sh 'for d in dashel enki aseba; do (cd $d && git remote -v | sed s/^/$d:/) done'
       
       stash excludes: '.git', name: 'source'
-    }
 
-    script {
       @NonCPS
       def labelsToNodes(labels) {
 	def nodeMap = [:]
