@@ -63,5 +63,9 @@ pipeline {
 	    ])
     }
 
+    stage("Archive") {
+      archiveArtifacts artifacts: '_install/**', fingerprint: true, onlyIfSuccessful: true
+    }
+    
   }
 }
