@@ -24,14 +24,13 @@ pipeline {
       
       // stash excludes: '.git', name: 'source'
 
-      script {
-	def steps = labelsToNodes.doit([ component:'dashel', labels:['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] ])
-      }
     }
     
     stage("Dashel") {
       parallel (
-	labelsToNodes.doit([ component:'dashel', labels:['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] ])
+	"debian": {
+	  asebaCMakeComponent([ component: 'dashel', label: 'inirobot-deb64' ])
+	}
       )
     }
       // parallel (
