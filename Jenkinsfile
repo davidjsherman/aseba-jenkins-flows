@@ -30,9 +30,9 @@ pipeline {
     }
     
     stage("Dashel") {
-      script {
-	println steps
-      }
+      parallel (
+	steps
+      )
     }
       // parallel (
       // 	"ubuntu": {
