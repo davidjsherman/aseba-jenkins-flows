@@ -31,7 +31,7 @@ pipeline {
     
     stage("Dashel") {
       parallel (
-	steps
+	labelsToNodes.doit([ component:'dashel', labels:['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] ])
       )
     }
       // parallel (
