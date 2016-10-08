@@ -22,7 +22,7 @@ pipeline {
       
       // sh 'for d in dashel enki aseba; do (cd $d && git remote -v | sed s/^/$d:/) done'
       
-      stash excludes: '.git', name: 'source'
+      // stash excludes: '.git', name: 'source'
     }
     
     stage("Dashel") {
