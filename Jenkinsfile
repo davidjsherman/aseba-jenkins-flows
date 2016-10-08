@@ -23,12 +23,15 @@ pipeline {
       // sh 'for d in dashel enki aseba; do (cd $d && git remote -v | sed s/^/$d:/) done'
       
       // stash excludes: '.git', name: 'source'
+
+      script {
+	def steps = labelsToNodes.doit([ component:'dashel', labels:['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] ])
+	echo steps
+      }
     }
     
     stage("Dashel") {
-      script {
-	labelsToNodes.doit([ component:'dashel', labels:['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] ])
-      }
+      parallel( steps )
     }
       // parallel (
       // 	"ubuntu": {
