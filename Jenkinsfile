@@ -27,7 +27,7 @@ pipeline {
     
     stage("Dashel") {
       script {
-	echo labelsToNodes.build([ component:'dashel', labels:['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] ])
+	labelsToNodes.doit([ component:'dashel', labels:['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] ])
       }
     }
       // parallel (
