@@ -26,12 +26,13 @@ pipeline {
 
       script {
 	def steps = labelsToNodes.doit([ component:'dashel', labels:['inirobot-u64', 'inirobot-osx', 'inirobot-win7'] ])
-	echo steps
       }
     }
     
     stage("Dashel") {
-      parallel( steps )
+      script {
+	echo steps
+      }
     }
       // parallel (
       // 	"ubuntu": {
