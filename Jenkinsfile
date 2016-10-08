@@ -31,7 +31,7 @@ pipeline {
     
     stage("Dashel") {
       script {
-	echo steps
+	println steps
       }
     }
       // parallel (
